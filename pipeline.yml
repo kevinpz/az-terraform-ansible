@@ -56,7 +56,7 @@ stages:
         displayName: Terraform output
         name: get_output 
         inputs:
-          workingDirectory: validate
+          workingDirectory: terraform
           command: output
           environmentServiceName: '${{ variables.sc_name }}'
           providerAzureRmSubscriptionId: '${{ variables.depl_subscription_id }}'
