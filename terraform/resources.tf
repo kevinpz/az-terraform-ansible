@@ -27,21 +27,6 @@ resource "azurerm_public_ip" "pip" {
   allocation_method   = "Static"
 }
 
-# Get the existing DNS zone
-data "azurerm_dns_zone" "dns_zone" {
-  name                = "az.coffeetime.dev"
-  resource_group_name = "rg-dns"
-}
-
-# Create a DNS record
-resource "azurerm_dns_a_record" "dns_entry" {
-  name                = "terraform-ansible-demo"
-  resource_group_name = "rg-dns"
-  zone_name           = data.azurerm_dns_zone.dns_zone.name
-  ttl                 = 1
-  target_resource_id  = azurerm_public_ip.pip.id
-}
-
 # Create a NIC
 resource "azurerm_network_interface" "nic" {
   name                = "nic-terraform-ansible"
