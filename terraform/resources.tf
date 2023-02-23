@@ -37,7 +37,6 @@ data "azurerm_dns_zone" "dns_zone" {
 resource "azurerm_dns_a_record" "dns_entry" {
   name                = "terraform-ansible-demo"
   resource_group_name = "rg-dns"
-  location            = azurerm_resource_group.rg.location
   zone_name           = data.azurerm_dns_zone.dns_zone.name
   ttl                 = 1
   target_resource_id  = azurerm_public_ip.pip.id
