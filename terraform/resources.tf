@@ -55,7 +55,7 @@ data "azurerm_key_vault_secret" "secret" {
 
 # Create a VM
 resource "azurerm_linux_virtual_machine" "packer" {
-  name                = "vm-packer-${var.dst_image_name}"
+  name                = "vm-terraform-ansible"
   resource_group_name = azurerm_resource_group.rg.name
   location            = azurerm_resource_group.rg.location
 

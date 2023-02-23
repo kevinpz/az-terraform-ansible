@@ -40,7 +40,7 @@ stages:
           backendAzureRmResourceGroupName: '${{ variables.stg_rg_name }}'
           backendAzureRmStorageAccountName: '${{ variables.stg_name }}'
           backendAzureRmContainerName: '${{ variables.stg_container_name }}'
-          backendAzureRmKey: '$(System.TeamProject)/$(Build.Repository.Name)_validate.tfstate'
+          backendAzureRmKey: '$(System.TeamProject)/$(Build.Repository.Name).tfstate'
 
       # Deploy Terraform ressources
       - task: TerraformCLI@0
