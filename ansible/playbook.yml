@@ -19,3 +19,7 @@
         name: nginx
         enabled: yes
         state: started
+    - name: Deploy the custom web page
+      ansible.builtin.copy:
+        src: ./files/index.html
+        dest: /var/www/html/index.nginx-debian.html
