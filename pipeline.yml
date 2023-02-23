@@ -1,0 +1,78 @@
+variables:
+# Name of the service connection
+- name: sc_name
+  value: 'sc-mg-coffeetimedev'
+# ID of the subscription for the tfstate
+- name: backend_subscription_id
+  value: 'b34b291e-89b2-4d63-9f9c-1ac3e8f43b4f'
+# ID of the subscription for the deployment
+- name: depl_subscription_id
+  value: 'b34b291e-89b2-4d63-9f9c-1ac3e8f43b4f'
+# Storage account to store the tfstate
+- name: stg_name
+  value: 'stterraformkprintz'
+# RG name for the storage account to store the tfstate
+- name: stg_rg_name
+  value: 'rg-mgmt'
+# Name of the container to store the tfstate
+- name: stg_container_name
+  value: 'terraform'
+
+stages:
+# Deploy the server
+- stage: Deploy
+  # Use the a specific runner
+  pool: azure-vm
+
+  jobs:
+  - job: Deploy
+    steps:
+      # Init Terraform backend and download providers
+      - task: TerraformCLI@0
+        displayName: Terraform init
+        inputs:
+          workingDirectory: terraform
+          command: init
+          # Configure the backend to store the .tfstate file
+          backendType: azurerm
+          backendServiceArm: '${{ variables.sc_name }}'
+          backendAzureRmSubscriptionId: '${{ variables.backend_subscription_id }}'
+          backendAzureRmResourceGroupName: '${{ variables.stg_rg_name }}'
+          backendAzureRmStorageAccountName: '${{ variables.stg_name }}'
+          backendAzureRmContainerName: '${{ variables.stg_container_name }}'
+          backendAzureRmKey: '$(System.TeamProject)/$(Build.Repository.Name)_validate.tfstate'
+
+      # Deploy Terraform ressources
+      - task: TerraformCLI@0
+        displayName: Terraform apply
+        inputs:
+          workingDirectory: terraform
+          command: apply
+          environmentServiceName: '${{ variables.sc_name }}'
+          providerAzureRmSubscriptionId: '${{ variables.depl_subscription_id }}'
+
+      # Get Terraform output
+      - task: TerraformCLI@0
+        displayName: Terraform output
+        name: get_output 
+        inputs:
+          workingDirectory: validate
+          command: output
+          environmentServiceName: '${{ variables.sc_name }}'
+          providerAzureRmSubscriptionId: '${{ variables.depl_subscription_id }}'
+
+      # Use ansible to configure the server
+      - task: Ansible@0
+        displayName: Configure the server
+        inputs:
+          ansibleInterface: 'agentMachine'
+          playbookPathOnAgentMachine: 'ansible/playbook.yml'
+          failOnStdErr: false
+          inventoriesAgentMachine: inlineContent
+          inventoryInlineContentAgentMachine: |
+            [packer]
+            ${TF_OUT_VM_IP_ADDR}
+          args: --extra-vars "ansible_user=adminuser ansible_password=${vm_password}"
+        env:
+          vm_password: $(TF_OUT_VM_SECRET)
+          ANSIBLE_HOST_KEY_CHECKING: False

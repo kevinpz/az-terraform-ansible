@@ -1,0 +1,21 @@
+---
+# playbook.yml
+- name: 'Configure Image'
+  hosts: all
+  become: true
+  tasks:
+    - name: Update packages
+      ansible.builtin.apt:
+        update_cache: true
+        upgrade: yes
+    - name: Install NGINX
+      ansible.builtin.apt:
+        package:
+          - nginx
+        state: latest
+        update_cache: true
+    - name: Enable service nginx, and start it
+      ansible.builtin.service:
+        name: nginx
+        enabled: yes
+        state: started
